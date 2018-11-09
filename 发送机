@@ -1,0 +1,104 @@
+clc;
+close all;
+clear;
+
+m=128;
+N=512;
+n=1:1:N;
+N0=0.5*randn(1,N); %噪声
+h0=zeros(1,N);
+
+%带通滤波器设计%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+for i=1:N/2
+    h0(1,N-i+1)=h0(1,i);
+end;
+%%%%%%%%%   随机序列
+
+a=rand(1,m);
+for i=1:m
+    if(a(1,i)>0.5)
+        a(1,i)=1;   
+   else
+        a(1,i)=-1;
+  end;
+end;
+
+%%% 生成BPSK信号
+% bpsk_5m=zeros(1,N);
+% j=1;k=1;
+% for i=1:N
+%     if(j==(N/m+1))
+%         j=1;
+%         k=k+1;
+%     end;    % 0.05*pi 为初始相位，可以任意改变
+%     bpsk_5m(1,i)=a(1,k)*sin(2*pi*5*10^6*i+0.05*pi)+a(1,k)*cos(2*pi*5*10^6*i+0.05*pi);%5m
+%     j=j+1;
+% end;
+
+
+%正弦波信号
+% clc;
+% clear;
+% N=512;
+% n=0:N-1;
+ fs=400*10^6;
+% t=n/fs;
+% bpsk_5m=sin(2*pi*5*10^6*t);   
+% plot(bpsk_5m);
+for i=1:N
+    
+    
+ bpsk_5m(1,i)=sin(2*pi*5*10^6*i/fs);   
+    
+end;
+
+
+
+bpsk_m_samp=upsample(bpsk_5m,4);  %上采样4倍
+
+%采样四倍后过抗镜像滤波器
+y=bandp(bpsk_m_samp,18*10^6,22*10^6,17*10*6,23*10^6,0.3,50,fs);
+%匹配滤波器
+coeff = conj(fliplr(y));
+bpsk_m_samp_filter=conv(y,coeff);
+%匹配滤波器输出后过抗镜像滤波器
+bpsk_output=upsample(bpsk_m_samp_filter,5);
+output_5M=bandp(bpsk_output,9*10^7,11*10^7,8.5*10^7,11.5*10^7,0.3,50,fs);
+
+
+
+
+%频谱分析
+ figure(2)
+frequence_analyse(bpsk_m_samp,fs);
+
+figure(1) ;
+
+frequence_analyse(bpsk_5m, fs);
+figure(3) ;
+ 
+frequence_analyse(y,fs);
+
+figure(4) ;
+ 
+frequence_analyse(bpsk_output,fs);
+figure(5) ;
+ 
+frequence_analyse(output_5M,fs);
+
+
+
+
